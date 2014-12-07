@@ -63,7 +63,12 @@ void draw() {
     // To prevent flicker from frames that are all black (no movement),
     // only update the screen if the image has changed.
     if (movementSum > 0) {
-      updatePixels();
+      //updatePixels();
+      pushMatrix();
+      scale(-1,1);
+      video.pixels = pixels;
+      image(video.get(),-width,0);
+      popMatrix();
       println(movementSum); // Print the total amount of movement to the console
     }
   }
