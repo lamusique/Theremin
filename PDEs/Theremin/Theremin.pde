@@ -12,8 +12,23 @@ int numPixels;
 int[] previousFrame;
 Capture video;
 
+PVector curGauche;
+PVector curDroit;
+PVector prevGauche;
+PVector prevDroit;
+
+
 void setup() {
-  size(640, 480);
+  // XGA
+  size(1024, 768);
+  
+  // Les points des mains
+  curGauche = new PVector(0, 0);
+  curDroit = new PVector(0, 0);
+  prevGauche = new PVector(0, 0);
+  prevDroit = new PVector(0, 0);
+  
+  
   
   // This the default video input, see the GettingStartedCapture 
   // example if it creates an error
@@ -69,7 +84,7 @@ void draw() {
       video.pixels = pixels;
       image(video.get(),-width,0);
       popMatrix();
-      println(movementSum); // Print the total amount of movement to the console
+      //println(movementSum); // Print the total amount of movement to the console
     }
   }
 }
