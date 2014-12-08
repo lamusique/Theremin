@@ -319,14 +319,17 @@ void draw(){
       rect(0, 0, width, 10); //top dead zone (mute)
       rect(0, height-30, width, height-30); //bottom dead zone (mute)
       
-      //draw control-zone level indicators
+      // Draw control-zone level indicators
       rectMode(CENTER);
       ellipseMode(CENTER);
       noStroke();
-      fill(255, 0, 0); //color: pitch level indicator
+      // Symbols
+      // Amplitude level indicator color: red
+      fill(255, 0, 0);
       rect(currentMaxLeft.x, currentMaxLeft.y, 30, 2);
       ellipse(currentMaxLeft.x, currentMaxLeft.y, 7, 7);
-      fill(0, 0, 255); //color: volume level indicator
+      // Pitch level indicator color: blue
+      fill(0, 0, 255);
       rect(currentMaxRight.x, currentMaxRight.y, 30, 2);
       ellipse(currentMaxRight.x, currentMaxRight.y, 7, 7);
       
