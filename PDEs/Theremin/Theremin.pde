@@ -22,7 +22,10 @@ int mode = 0;
 
 void setup() {
   // Open up the camera so that it has a video feed to process
-  initializeCamera(320, 240);
+  // VGA of iSight 640x480
+  // Assuming FaceTime HD (720p)
+  // 720p format which has a resolution of 1280x720
+  initializeCamera(1280, 720);
   size(cam.width, cam.height);
 
   // Select which tracker you want to use by uncommenting and commenting the lines below
