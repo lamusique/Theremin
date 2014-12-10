@@ -1,90 +1,133 @@
-/**
- * Frame Differencing 
- * by Golan Levin. 
- *
- * Quantify the amount of movement in the video frame using frame-differencing.
- */ 
-
+// Launches your webcam and when you select an object it will track it.
+// By modifying the code below you can change the type of tracker used.
+// None of the trackers are perfect and they each have different strengths
+// and weaknesses.
 
 import processing.video.*;
+import boofcv.processing.*;
+import boofcv.struct.image.*;
+import georegression.struct.point.*;
+import georegression.struct.shapes.*;
 
-int numPixels;
-int[] previousFrame;
-Capture video;
+Capture cam;
+SimpleTrackerObject tracker;
 
-PVector curGauche;
-PVector curDroit;
-PVector prevGauche;
-PVector prevDroit;
-
+// storage for where the use selects the target and the current target location
+Quadrilateral_F64 target = new Quadrilateral_F64();
+// if true the target has been detected by the tracker
+boolean targetVisible = false;
+PFont f;
+// indicates if the user is selecting a target or if the tracker is tracking it
+int mode = 0;
 
 void setup() {
-  // XGA
-  size(1024, 768);
-  
-  // Les points des mains
-  curGauche = new PVector(0, 0);
-  curDroit = new PVector(0, 0);
-  prevGauche = new PVector(0, 0);
-  prevDroit = new PVector(0, 0);
-  
-  
-  
-  // This the default video input, see the GettingStartedCapture 
-  // example if it creates an error
-  video = new Capture(this, width, height);
-  
-  // Start capturing the images from the camera
-  video.start(); 
-  
-  numPixels = video.width * video.height;
-  // Create an array to store the previously captured frame
-  previousFrame = new int[numPixels];
-  loadPixels();
+  // Open up the camera so that it has a video feed to process
+  initializeCamera(320, 240);
+  size(cam.width, cam.height);
+
+  // Select which tracker you want to use by uncommenting and commenting the lines below
+  tracker = Boof.trackerCirculant(null, ImageDataType.F32);
+//    tracker = Boof.trackerTld(null,ImageDataType.F32);
+//    tracker = Boof.trackerMeanShiftComaniciu(null, ImageType.ms(3,ImageFloat32.class));
+//    tracker = Boof.trackerSparseFlow(null, ImageDataType.F32);
+
+  f = createFont("Arial", 32, true);
 }
 
 void draw() {
-  if (video.available()) {
-    // When using video to manipulate the screen, use video.available() and
-    // video.read() inside the draw() method so that it's safe to draw to the screen
-    video.read(); // Read the new frame from the camera
-    video.loadPixels(); // Make its pixels[] array available
-    
-    int movementSum = 0; // Amount of movement in the frame
-    for (int i = 0; i < numPixels; i++) { // For each pixel in the video frame...
-      color currColor = video.pixels[i];
-      color prevColor = previousFrame[i];
-      // Extract the red, green, and blue components from current pixel
-      int currR = (currColor >> 16) & 0xFF; // Like red(), but faster
-      int currG = (currColor >> 8) & 0xFF;
-      int currB = currColor & 0xFF;
-      // Extract red, green, and blue components from previous pixel
-      int prevR = (prevColor >> 16) & 0xFF;
-      int prevG = (prevColor >> 8) & 0xFF;
-      int prevB = prevColor & 0xFF;
-      // Compute the difference of the red, green, and blue values
-      int diffR = abs(currR - prevR);
-      int diffG = abs(currG - prevG);
-      int diffB = abs(currB - prevB);
-      // Add these differences to the running tally
-      movementSum += diffR + diffG + diffB;
-      // Render the difference image to the screen
-      pixels[i] = color(diffR, diffG, diffB);
-      // The following line is much faster, but more confusing to read
-      //pixels[i] = 0xff000000 | (diffR << 16) | (diffG << 8) | diffB;
-      // Save the current color into the 'previous' buffer
-      previousFrame[i] = currColor;
+  if (cam.available() == true) {
+    cam.read();
+
+    if ( mode == 1 ) {
+      targetVisible = true;
+    } else if ( mode == 2 ) {
+      // user has selected the object to track so initialize the tracker using
+      // a rectangle.  More complex objects and be initialized using a Quadrilateral.
+      if ( !tracker.initialize(cam, target.a.x, target.a.y, target.c.x, target.c.y) ) {
+        mode = 100;
+      } else {
+        targetVisible = true;
+        mode = 3;
+      }
+    } else if ( mode == 3 ) {
+      // Update the track state using the next image in the sequence
+      if ( !tracker.process(cam) ) {
+        // it failed to detect the target.  Depending on the tracker this could mean
+        // the track is lost for ever or it could be recovered in the future when it becomes visible again
+        targetVisible = false;
+      } else {
+        // tracking worked, save the results
+        targetVisible = true;
+        target.set(tracker.getLocation());
+      }
     }
-    // To prevent flicker from frames that are all black (no movement),
-    // only update the screen if the image has changed.
-    if (movementSum > 0) {
-      //updatePixels();
-      pushMatrix();
-      scale(-1,1);
-      video.pixels = pixels;
-      image(video.get(),-width,0);
-      popMatrix();
-      //println(movementSum); // Print the total amount of movement to the console
+  }
+  image(cam, 0, 0);
+
+  // The code below deals with visualizing the results
+  textFont(f);
+  textAlign(CENTER);
+  fill(0, 0xFF, 0);
+  if ( mode == 0 ) {
+    text("Click and Drag", width/2, height/4);
+  } else if ( mode == 1 || mode == 2 || mode == 3) {
+    if ( targetVisible ) {
+      drawTarget();
+    } else {
+      text("Can't Detect Target", width/2, height/4);
     }
+  } else if ( mode == 100 ) {
+    text("Initialization Failed.\nSelect again.", width/2, height/4);
+  }
+}
+
+void mousePressed() {
+  // use is draging a rectangle to select the target
+  mode = 1;
+  target.a.set(mouseX, mouseY);
+  target.b.set(mouseX, mouseY);
+  target.c.set(mouseX, mouseY);
+  target.d.set(mouseX, mouseY);
+}
+
+void mouseDragged() {
+  target.b.x = mouseX;
+  target.c.set(mouseX, mouseY);
+  target.d.y = mouseY;
+}
+
+void mouseReleased() {
+  // After the mouse is released tell it to initialize tracking
+  mode = 2;
+}
+
+// Draw the target using different colors for each side so you can see if it is rotating
+// Most trackers don't estimate rotation.
+void drawTarget() {
+  noFill();
+  strokeWeight(3);
+  stroke(255, 0, 0);
+  line(target.a, target.b);
+  stroke(0, 255, 0);
+  line(target.b, target.c);
+  stroke(0, 0, 255);
+  line(target.c, target.d);
+  stroke(255, 0, 255);
+  line(target.d, target.a);
+}
+
+void line( Point2D_F64 a, Point2D_F64 b ) {
+  line((float)a.x, (float)a.y, (float)b.x, (float)b.y);
+}
+
+void initializeCamera( int desiredWidth, int desiredHeight ) {
+  String[] cameras = Capture.list();
+
+  if (cameras.length == 0) {
+    println("There are no cameras available for capture.");
+    exit();
+  } else {
+    cam = new Capture(this, desiredWidth, desiredHeight);
+    cam.start();
   }
 }
