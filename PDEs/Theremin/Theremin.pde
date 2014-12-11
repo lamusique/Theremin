@@ -117,6 +117,8 @@ void drawTarget() {
   line(target.c, target.d);
   stroke(255, 0, 255);
   line(target.d, target.a);
+  
+  text("x=" + target.a.x + " y="+target.b.y, width/2, height);
 }
 
 void line( Point2D_F64 a, Point2D_F64 b ) {
