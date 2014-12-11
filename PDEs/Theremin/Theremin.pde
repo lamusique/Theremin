@@ -135,15 +135,24 @@ void drawTarget() {
   
   text("x=" + target.a.x + " y="+target.a.y, width/2, height);
 
-    // Map mouseY from 0.0 to 1.0 for amplitude
-    tri.amp(map((float)target.a.y, 0, height, 1.0, 0.0));
+    // Map for amplitude
+    float amp = 2/map((float)target.a.y, 0, height, 2.0, 0.0);
+    text("amp="+amp, width/2, height - 50);
+    tri.amp(amp);
 
-    // Map mouseX from 20Hz to 1000Hz for frequency  
-    tri.freq(map((float)target.a.x, 0, width, 80.0, 1000.0));
-  
-    // Map mouseX from -1.0 to 1.0 for left to right 
+    // Map for frequency
+    //tri.freq(map(log2((float)target.a.x), 0, width, 80.0, 4000.0));
+    float freq = pow(2,map((float)target.a.x, 0, width, 1/12, 3))*220;
+    text("freq="+freq, width/2, height - 100);
+    tri.freq(freq);
+
+    // Map from -1.0 to 1.0 for left to right 
     tri.pan(map((float)target.a.x, 0, width, -1.0, 1.0));
 
+}
+// Calculates the base-10 logarithm of a number
+float log2 (float x) {
+  return (log(x) / log(2));
 }
 
 void line( Point2D_F64 a, Point2D_F64 b ) {
