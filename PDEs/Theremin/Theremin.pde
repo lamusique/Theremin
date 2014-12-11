@@ -9,8 +9,14 @@ import boofcv.struct.image.*;
 import georegression.struct.point.*;
 import georegression.struct.shapes.*;
 
+import processing.sound.*;
+
+
 Capture cam;
 SimpleTrackerObject tracker;
+
+TriOsc tri;
+
 
 // storage for where the use selects the target and the current target location
 Quadrilateral_F64 target = new Quadrilateral_F64();
@@ -35,6 +41,15 @@ void setup() {
 //    tracker = Boof.trackerSparseFlow(null, ImageDataType.F32);
 
   f = createFont("Arial", 32, true);
+
+    // Create and start the triangle wave oscillator.
+
+    tri = new TriOsc(this);
+    
+    //Start the Sine Oscillator. There will be no sound in the beginning
+    //unless the mouse enters the   
+    tri.play();
+
 }
 
 void draw() {
@@ -118,7 +133,17 @@ void drawTarget() {
   stroke(255, 0, 255);
   line(target.d, target.a);
   
-  text("x=" + target.a.x + " y="+target.b.y, width/2, height);
+  text("x=" + target.a.x + " y="+target.a.y, width/2, height);
+
+    // Map mouseY from 0.0 to 1.0 for amplitude
+    tri.amp(map((float)target.a.y, 0, height, 1.0, 0.0));
+
+    // Map mouseX from 20Hz to 1000Hz for frequency  
+    tri.freq(map((float)target.a.x, 0, width, 80.0, 1000.0));
+  
+    // Map mouseX from -1.0 to 1.0 for left to right 
+    tri.pan(map((float)target.a.x, 0, width, -1.0, 1.0));
+
 }
 
 void line( Point2D_F64 a, Point2D_F64 b ) {
