@@ -19,6 +19,7 @@ TriOsc tri;
 
 
 // storage for where the use selects the target and the current target location
+// http://georegression.org/javadoc/georegression/struct/GeoTuple2D_F64.html#x
 Quadrilateral_F64 target = new Quadrilateral_F64();
 // if true the target has been detected by the tracker
 boolean targetVisible = false;
