@@ -32,6 +32,7 @@ void setup() {
   // VGA of iSight 640x480
   // Assuming FaceTime HD (720p)
   // 720p format which has a resolution of 1280x720
+  //initializeCamera(320, 240);
   initializeCamera(1280, 720);
   size(cam.width, cam.height);
 
@@ -134,17 +135,19 @@ void drawTarget() {
   stroke(255, 0, 255);
   line(target.d, target.a);
   
-  text("x=" + target.a.x + " y="+target.a.y, width/2, height);
+  textAlign(LEFT);
+  text("x=" + target.a.x, width/4, height - 15);
+  text("y=" + target.a.y, width * 11/20, height - 15);
 
     // Map for amplitude
     float amp = 2/map((float)target.a.y, 0, height, 2.0, 0.0);
-    text("amp="+amp, width/2, height - 50);
+    text("amp="+amp, width/4, height - 50);
     tri.amp(amp);
 
     // Map for frequency
     //tri.freq(map(log2((float)target.a.x), 0, width, 80.0, 4000.0));
     float freq = pow(2,map((float)target.a.x, 0, width, 1/12, 3))*220;
-    text("freq="+freq, width/2, height - 100);
+    text("freq="+freq, width/4, height - 80);
     tri.freq(freq);
 
     // Map from -1.0 to 1.0 for left to right 
