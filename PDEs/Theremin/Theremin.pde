@@ -90,31 +90,29 @@ void draw() {
             }
         }
     }
-//  image(cam, 0, 0);
 
-//      updatePixels();
-      pushMatrix();
-      scale(-1, 1);
-//      cam.pixels = pixels;
-      image(cam, -width, 0);
-      popMatrix();
+    // x mirroring to display
+    pushMatrix();
+    scale(-1, 1);
+    image(cam, -width, 0);
+    popMatrix();
 
 
-  // The code below deals with visualizing the results
-  textFont(f);
-  textAlign(CENTER);
-  fill(0, 0xFF, 0);
-  if ( mode == 0 ) {
-    text("Click and Drag", width/2, height/4);
-  } else if ( mode == 1 || mode == 2 || mode == 3) {
-    if ( targetVisible ) {
-      drawTarget();
-    } else {
-      text("Can't Detect Target", width/2, height/4);
+    // The code below deals with visualizing the results
+    textFont(f);
+    textAlign(CENTER);
+    fill(0, 0xFF, 0);
+    if ( mode == 0 ) {
+        text("Click and Drag", width/2, height/4);
+    } else if ( mode == 1 || mode == 2 || mode == 3) {
+        if ( targetVisible ) {
+            drawTarget();
+        } else {
+            text("Can't Detect Target", width/2, height/4);
+        }
+    } else if ( mode == 100 ) {
+        text("Initialization Failed.\nSelect again.", width/2, height/4);
     }
-  } else if ( mode == 100 ) {
-    text("Initialization Failed.\nSelect again.", width/2, height/4);
-  }
 }
 
 void mousePressed() {
@@ -171,7 +169,6 @@ void drawTarget() {
     osc.amp(amp);
 
     // Map for frequency
-    //tri.freq(map(log2((float)target.a.x), 0, width, 80.0, 4000.0));
     float freq = pow(2,map(x, 0, width, 1/12, 3))*220;
     text("freq="+freq, width/4, height - 80);
     osc.freq(freq);
