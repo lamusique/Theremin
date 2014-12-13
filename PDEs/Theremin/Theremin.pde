@@ -16,8 +16,10 @@ import processing.sound.*;
 Capture cam;
 SimpleTrackerObject tracker;
 
-// TODO should be really polymorphic.
-TriOsc osc;
+// FIXME should be really polymorphic.
+// The type Oscillator is not visible.
+//Oscillator osc;
+SawOsc osc;
 LowPass filter;
 
 // storage for where the use selects the target and the current target location
@@ -47,7 +49,7 @@ void setup() {
     f = createFont("Arial", 32, true);
 
     // Create and start the triangle wave oscillator.
-    osc = new TriOsc(this);
+    osc = new SawOsc(this);
     // filter
     filter = new LowPass(this);
     
@@ -56,8 +58,8 @@ void setup() {
     osc.play();
 
     // Filter process has to be after play().
-    filter.process(osc, 800);
-    filter.freq(1000);
+    filter.process(osc);
+    filter.freq(400);
 
 }
 
@@ -164,12 +166,15 @@ void drawTarget() {
   text("y=" + y, width * 11/20, height - 15);
 
     // Map for amplitude
-    float amp = map(y, 0, height, 2.0, 0.0);
-    text("amp="+amp, width/4, height - 50);
+    // 1 is the limit but it can be overdriven.
+    float amp = pow(map(y, 0, height, 2.0, 0.0), 7) / 64;
+    text("amp="+amp+" pow="+pow(map(y, 0, height, 2.0, 0.0), 2), width/4, height - 50);
     osc.amp(amp);
 
     // Map for frequency
-    float freq = pow(2,map(x, 0, width, 1/12, 3))*220;
+    // 130.812782650299 is lower C.
+    // 5 octaves
+    float freq = pow(2, map(x, 0, width, 1/12, 5)) * 130.8;
     text("freq="+freq, width/4, height - 80);
     osc.freq(freq);
 
