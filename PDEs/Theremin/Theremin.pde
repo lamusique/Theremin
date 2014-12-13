@@ -167,6 +167,7 @@ void drawTarget() {
 
     // Map for amplitude
     // 1 is the limit but it can be overdriven.
+    // y = (1/2^6) * x^7
     float amp = pow(map(y, 0, height, 2.0, 0.0), 7) / 64;
     text("amp="+amp+" pow="+pow(map(y, 0, height, 2.0, 0.0), 2), width/4, height - 50);
     osc.amp(amp);
