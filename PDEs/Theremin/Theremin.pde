@@ -147,7 +147,7 @@ void drawTarget() {
   text("y=" + target.a.y, width * 11/20, height - 15);
 
     // Map for amplitude
-    float amp = 2/map((float)target.a.y, 0, height, 2.0, 0.0);
+    float amp = map((float)target.a.y, 0, height, 2.0, 0.0);
     text("amp="+amp, width/4, height - 50);
     osc.amp(amp);
 
