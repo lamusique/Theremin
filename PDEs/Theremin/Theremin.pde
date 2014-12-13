@@ -18,6 +18,7 @@ SimpleTrackerObject tracker;
 
 // TODO should be polymorphic.
 TriOsc osc;
+LowPass filter;
 
 // storage for where the use selects the target and the current target location
 // http://georegression.org/javadoc/georegression/struct/GeoTuple2D_F64.html#x
@@ -46,14 +47,17 @@ void setup() {
   f = createFont("Arial", 32, true);
 
     // Create and start the triangle wave oscillator.
-
     osc = new TriOsc(this);
-    
-    // TODO filter
+    // filter
+    filter = new LowPass(this);
     
     //Start the Oscillator. There will be no sound in the beginning
     //unless the mouse enters the   
     osc.play();
+
+    // Filter process has to be after play().
+    filter.process(osc, 800);
+    filter.freq(1000);
 
 }
 
