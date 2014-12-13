@@ -1,7 +1,8 @@
+// Theremin on Processing with the camera
+
 // Launches your webcam and when you select an object it will track it.
-// By modifying the code below you can change the type of tracker used.
-// None of the trackers are perfect and they each have different strengths
-// and weaknesses.
+// X axis is for pitch.
+// Y axis is for amplitude.
 
 import processing.video.*;
 import boofcv.processing.*;
@@ -15,8 +16,8 @@ import processing.sound.*;
 Capture cam;
 SimpleTrackerObject tracker;
 
-TriOsc tri;
-
+// TODO should be polymorphic.
+TriOsc osc;
 
 // storage for where the use selects the target and the current target location
 // http://georegression.org/javadoc/georegression/struct/GeoTuple2D_F64.html#x
@@ -46,11 +47,13 @@ void setup() {
 
     // Create and start the triangle wave oscillator.
 
-    tri = new TriOsc(this);
+    osc = new TriOsc(this);
     
-    //Start the Sine Oscillator. There will be no sound in the beginning
+    // TODO filter
+    
+    //Start the Oscillator. There will be no sound in the beginning
     //unless the mouse enters the   
-    tri.play();
+    osc.play();
 
 }
 
@@ -142,16 +145,16 @@ void drawTarget() {
     // Map for amplitude
     float amp = 2/map((float)target.a.y, 0, height, 2.0, 0.0);
     text("amp="+amp, width/4, height - 50);
-    tri.amp(amp);
+    osc.amp(amp);
 
     // Map for frequency
     //tri.freq(map(log2((float)target.a.x), 0, width, 80.0, 4000.0));
     float freq = pow(2,map((float)target.a.x, 0, width, 1/12, 3))*220;
     text("freq="+freq, width/4, height - 80);
-    tri.freq(freq);
+    osc.freq(freq);
 
     // Map from -1.0 to 1.0 for left to right 
-    tri.pan(map((float)target.a.x, 0, width, -1.0, 1.0));
+    osc.pan(map((float)target.a.x, 0, width, -1.0, 1.0));
 
 }
 // Calculates the base-10 logarithm of a number
