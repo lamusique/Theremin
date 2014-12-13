@@ -16,7 +16,7 @@ import processing.sound.*;
 Capture cam;
 SimpleTrackerObject tracker;
 
-// TODO should be polymorphic.
+// TODO should be really polymorphic.
 TriOsc osc;
 LowPass filter;
 
@@ -40,11 +40,11 @@ void setup() {
 
   // Select which tracker you want to use by uncommenting and commenting the lines below
   tracker = Boof.trackerCirculant(null, ImageDataType.F32);
-//    tracker = Boof.trackerTld(null,ImageDataType.F32);
+//    tracker = Boof.trackerTld(null, ImageDataType.F32);
 //    tracker = Boof.trackerMeanShiftComaniciu(null, ImageType.ms(3,ImageFloat32.class));
 //    tracker = Boof.trackerSparseFlow(null, ImageDataType.F32);
 
-  f = createFont("Arial", 32, true);
+    f = createFont("Arial", 32, true);
 
     // Create and start the triangle wave oscillator.
     osc = new TriOsc(this);
@@ -62,34 +62,43 @@ void setup() {
 }
 
 void draw() {
-  if (cam.available() == true) {
-    cam.read();
+  
+    if (cam.available() == true) {
+        cam.read();
 
-    if ( mode == 1 ) {
-      targetVisible = true;
-    } else if ( mode == 2 ) {
-      // user has selected the object to track so initialize the tracker using
-      // a rectangle.  More complex objects and be initialized using a Quadrilateral.
-      if ( !tracker.initialize(cam, target.a.x, target.a.y, target.c.x, target.c.y) ) {
-        mode = 100;
-      } else {
-        targetVisible = true;
-        mode = 3;
-      }
-    } else if ( mode == 3 ) {
-      // Update the track state using the next image in the sequence
-      if ( !tracker.process(cam) ) {
-        // it failed to detect the target.  Depending on the tracker this could mean
-        // the track is lost for ever or it could be recovered in the future when it becomes visible again
-        targetVisible = false;
-      } else {
-        // tracking worked, save the results
-        targetVisible = true;
-        target.set(tracker.getLocation());
-      }
+        if ( mode == 1 ) {
+            targetVisible = true;
+        } else if ( mode == 2 ) {
+            // user has selected the object to track so initialize the tracker using
+            // a rectangle.  More complex objects and be initialized using a Quadrilateral.
+            if (!tracker.initialize(cam, target.a.x, target.a.y, target.c.x, target.c.y) ) {
+                mode = 100;
+            } else {
+                targetVisible = true;
+                mode = 3;
+            }
+        } else if (mode == 3) {
+            // Update the track state using the next image in the sequence
+            if (!tracker.process(cam)) {
+                // it failed to detect the target.  Depending on the tracker this could mean
+                // the track is lost for ever or it could be recovered in the future when it becomes visible again
+                targetVisible = false;
+            } else {
+                // tracking worked, save the results
+                targetVisible = true;
+                target.set(tracker.getLocation());
+            }
+        }
     }
-  }
-  image(cam, 0, 0);
+//  image(cam, 0, 0);
+
+//      updatePixels();
+      pushMatrix();
+      scale(-1, 1);
+//      cam.pixels = pixels;
+      image(cam, -width, 0);
+      popMatrix();
+
 
   // The code below deals with visualizing the results
   textFont(f);
@@ -111,15 +120,17 @@ void draw() {
 void mousePressed() {
   // use is draging a rectangle to select the target
   mode = 1;
-  target.a.set(mouseX, mouseY);
-  target.b.set(mouseX, mouseY);
-  target.c.set(mouseX, mouseY);
-  target.d.set(mouseX, mouseY);
+  float x = width - mouseX;
+  target.a.set(x, mouseY);
+  target.b.set(x, mouseY);
+  target.c.set(x, mouseY);
+  target.d.set(x, mouseY);
 }
 
 void mouseDragged() {
-  target.b.x = mouseX;
-  target.c.set(mouseX, mouseY);
+  float x = width - mouseX;
+  target.b.x = x;
+  target.c.set(x, mouseY);
   target.d.y = mouseY;
 }
 
@@ -134,36 +145,40 @@ void drawTarget() {
   noFill();
   strokeWeight(3);
   stroke(255, 0, 0);
-  line(target.a, target.b);
+  // x mirroring
+  double ax = width - target.a.x;
+  double bx = width - target.b.x;
+  double cx = width - target.c.x;
+  double dx = width - target.d.x;
+  line((float)ax, (float)target.a.y, (float)bx, (float)target.b.y);
   stroke(0, 255, 0);
-  line(target.b, target.c);
+  line((float)bx, (float)target.b.y, (float)cx, (float)target.c.y);
   stroke(0, 0, 255);
-  line(target.c, target.d);
+  line((float)cx, (float)target.c.y, (float)dx, (float)target.d.y);
   stroke(255, 0, 255);
-  line(target.d, target.a);
+  line((float)dx, (float)target.d.y, (float)ax, (float)target.a.y);
   
   textAlign(LEFT);
-  text("x=" + target.a.x, width/4, height - 15);
-  text("y=" + target.a.y, width * 11/20, height - 15);
+  // Reluctant down casting...
+  float x = (float) ax;
+  float y = (float) target.a.y;
+  text("x=" + x, width/4, height - 15);
+  text("y=" + y, width * 11/20, height - 15);
 
     // Map for amplitude
-    float amp = map((float)target.a.y, 0, height, 2.0, 0.0);
+    float amp = map(y, 0, height, 2.0, 0.0);
     text("amp="+amp, width/4, height - 50);
     osc.amp(amp);
 
     // Map for frequency
     //tri.freq(map(log2((float)target.a.x), 0, width, 80.0, 4000.0));
-    float freq = pow(2,map((float)target.a.x, 0, width, 1/12, 3))*220;
+    float freq = pow(2,map(x, 0, width, 1/12, 3))*220;
     text("freq="+freq, width/4, height - 80);
     osc.freq(freq);
 
     // Map from -1.0 to 1.0 for left to right 
-    osc.pan(map((float)target.a.x, 0, width, -1.0, 1.0));
+    osc.pan(map(x, 0, width, -1.0, 1.0));
 
-}
-// Calculates the base-10 logarithm of a number
-float log2 (float x) {
-  return (log(x) / log(2));
 }
 
 void line( Point2D_F64 a, Point2D_F64 b ) {
